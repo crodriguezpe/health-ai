@@ -116,3 +116,48 @@ button{
 .spacer{
     height:90px;
 }
+.metricGrid{
+
+display:grid;
+
+grid-template-columns:1fr;
+
+gap:12px;
+
+}
+
+.metricGrid label{
+
+font-size:15px;
+
+color:#8E8E93;
+
+margin-top:10px;
+
+}
+
+.metricGrid input{
+
+background:#2C2C2E;
+
+border:none;
+
+border-radius:12px;
+
+padding:14px;
+
+font-size:18px;
+
+color:white;
+
+width:100%;
+
+outline:none;
+
+}
+
+.metricGrid input:focus{
+
+border:2px solid #0A84FF;
+
+}
