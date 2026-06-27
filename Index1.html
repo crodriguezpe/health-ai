@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta
+    name="viewport"
+    content="width=device-width,initial-scale=1,viewport-fit=cover">
+
+<title>Health AI</title>
+
+<meta name="theme-color" content="#000000">
+
+<meta
+name="apple-mobile-web-app-capable"
+content="yes">
+
+<meta
+name="apple-mobile-web-app-status-bar-style"
+content="black-translucent">
+
+<meta
+name="apple-mobile-web-app-title"
+content="Health AI">
+
+<link rel="manifest" href="manifest.json">
+
+<link
+rel="stylesheet"
+href="style.css">
+
+</head>
+
+<body>
+
+<header>
+
+<div>
+
+<h1>
+
+Health AI
+
+</h1>
+
+<p>
+
+Personal Health Intelligence
+
+</p>
+
+</div>
+
+<div id="todayDate">
+
+Saturday
+
+</div>
+
+</header>
+
+<main>
+
+<section
+class="dashboardPage"
+id="dashboardPage">
+
+<div class="grid">
+
+<div class="card hero">
+
+<div class="label">
+
+Health Age
+
+</div>
+
+<div
+id="healthAge"
+class="heroValue">
+
+49.8
+
+</div>
+
+<div class="heroUnit">
+
+Years
+
+</div>
+
+<div
+id="ageDifference"
+class="heroSubtitle">
+
+2.2 years younger
+
+</div>
+
+</div>
+
+<div class="card">
+
+<div class="label">
+
+Readiness
+
+</div>
+
+<div
+id="readiness"
+class="value blue">
+
+82%
+
+</div>
+
+</div>
+
+<div class="card">
+
+<div class="label">
+
+Sleep Score
+
+</div>
+
+<div
+id="sleepScore"
+class="value orange">
+
+86
+
+</div>
+
+</div>
+
+<div class="card">
+
+<div class="label">
+
+Activity
+
+</div>
+
+<div
+id="activityScore"
+class="value green">
+
+74
+
+</div>
+
+</div>
+
+<div class="card">
+
+<div class="label">
+
+Longevity
+
+</div>
+
+<div
+id="longevityScore"
+class="value green">
+
+90
+
+</div>
+
+</div>
+
+</div>
+
+<section class="panel">
+
+<h2>
+
+Today's Metrics
+
+</h2>
+
+<div class="metricGrid">
+
+<div class="metric">
+
+<label>
+
+Steps
+
+</label>
+
+<input
+id="stepsInput"
+type="number"
+value="6500">
+
+</div>
+
+<div class="metric">
+
+<label>
+
+Sleep (hours)
+
+</label>
+
+<input
+id="sleepInput"
+type="number"
+step="0.1"
+value="7.4">
+
+</div>
+
+<div class="metric">
+
+<label>
+
+HRV
+
+</label>
+
+<input
+id="hrvInput"
+type="number"
+value="48">
+
+</div>
+
+<div class="metric">
+
+<label>
+
+Resting HR
+
+</label>
+
+<input
+id="hrInput"
+type="number"
+value="58">
+
+</div>
+
+<div class="metric">
+
+<label>
+
+Weight (kg)
+
+</label>
+
+<input
+id="weightInput"
+type="number"
+step="0.1"
+value="85">
+
+</div>
+
+<div class="metric">
+
+<label>
+
+Body Fat %
+
+</label>
+
+<input
+id="fatInput"
+type="number"
+step="0.1"
+value="20">
+
+</div>
+
+<div class="metric">
+
+<label>
+
+Muscle Mass (kg)
+
+</label>
+
+<input
+id="muscleInput"
+type="number"
+step="0.1"
+value="38">
+
+</div>
+
+<div class="metric">
+
+<label>
+
+SpO₂ %
+
+</label>
+
+<input
+id="spo2Input"
+type="number"
+value="98">
+
+</div>
+
+<div class="metric">
+
+<label>
+
+Stress
+
+</label>
+
+<input
+id="stressInput"
+type="number"
+min="0"
+max="100"
+value="28">
+
+</div>
+
+</div>
+
+<button
+id="analyzeButton">
+
+Analyze Today's Health
+
+</button>
+
+</section>
+<section class="panel">
+
+<h2>
+
+Health Age Trend
+
+</h2>
+
+<canvas
+id="healthChart"
+width="900"
+height="280">
+
+</canvas>
+
+</section>
+
+<section class="panel">
+
+<h2>
+
+Today's AI Coach
+
+</h2>
+
+<div
+id="coachCard"
+class="coachCard">
+
+<div
+id="coachMessage">
+
+Press <b>Analyze Today's Health</b> to receive your
+personalized recommendation.
+
+</div>
+
+</div>
+
+</section>
+
+</section>
+
+<!-- HISTORY PAGE -->
+
+<section
+id="historyPage"
+class="hiddenPage">
+
+<h2>
+
+History
+
+</h2>
+
+<div class="panel">
+
+<table
+id="historyTable">
+
+<thead>
+
+<tr>
+
+<th>Date</th>
+
+<th>Health Age</th>
+
+<th>Readiness</th>
+
+<th>Sleep</th>
+
+<th>Steps</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+</tbody>
+
+</table>
+
+</div>
+
+</section>
+
+<!-- WORKOUT PAGE -->
+
+<section
+id="workoutPage"
+class="hiddenPage">
+
+<h2>
+
+Workout Coach
+
+</h2>
+
+<div class="panel">
+
+<h3>
+
+Today's Recommendation
+
+</h3>
+
+<p
+id="workoutRecommendation">
+
+Analyze today's health to receive a
+personalized workout recommendation.
+
+</p>
+
+</div>
+
+<div class="panel">
+
+<h3>
+
+Available Programs
+
+</h3>
+
+<ul class="programList">
+
+<li>T25 Alpha</li>
+
+<li>T25 Beta</li>
+
+<li>T25 Gamma</li>
+
+<li>Les Mills Combat</li>
+
+<li>Nova Gym</li>
+
+<li>Treadmill</li>
+
+<li>Recovery Day</li>
+
+</ul>
+
+</div>
+
+</section>
+
+<!-- SETTINGS PAGE -->
+
+<section
+id="settingsPage"
+class="hiddenPage">
+
+<h2>
+
+Settings
+
+</h2>
+
+<div class="panel">
+
+<label>
+
+Age
+
+</label>
+
+<input
+id="ageInput"
+type="number"
+value="52">
+
+<label>
+
+Height (cm)
+
+</label>
+
+<input
+id="heightInput"
+type="number"
+value="176">
+
+<label>
+
+Goal
+
+</label>
+
+<select
+id="goalInput">
+
+<option>
+
+Lose Fat / Gain Muscle
+
+</option>
+
+<option>
+
+Lose Weight
+
+</option>
+
+<option>
+
+Gain Muscle
+
+</option>
+
+<option>
+
+Improve Cardio
+
+</option>
+
+</select>
+
+</div>
+
+</section>
+
+</main>
+
+<nav
+class="bottomNav">
+
+<button
+id="navDashboard"
+class="navButton active">
+
+🏠
+
+<span>
+
+Dashboard
+
+</span>
+
+</button>
+
+<button
+id="navHistory"
+class="navButton">
+
+📈
+
+<span>
+
+History
+
+</span>
+
+</button>
+
+<button
+id="navWorkout"
+class="navButton">
+
+🏃
+
+<span>
+
+Coach
+
+</span>
+
+</button>
+
+<button
+id="navSettings"
+class="navButton">
+
+⚙️
+
+<span>
+
+Settings
+
+</span>
+
+</button>
+
+</nav>
+
+<script src="storage.js"></script>
+
+<script src="charts.js"></script>
+
+<script src="app.js"></script>
+
+</body>
+
+</html>
