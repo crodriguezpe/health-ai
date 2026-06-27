@@ -32,6 +32,26 @@ function calculateScores() {
     };
 }
 function updateDashboard() {
+    state.steps =
+Number(document.getElementById("stepsInput").value);
+
+state.sleepHours =
+Number(document.getElementById("sleepInput").value);
+
+state.restingHR =
+Number(document.getElementById("hrInput").value);
+
+state.hrv =
+Number(document.getElementById("hrvInput").value);
+
+state.weight =
+Number(document.getElementById("weightInput").value);
+
+state.muscleMass =
+Number(document.getElementById("muscleInput").value);
+
+state.bodyFat =
+Number(document.getElementById("fatInput").value);
     const scores = calculateScores();
     document.getElementById("healthAge").textContent =
         scores.healthAge;
