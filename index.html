@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Health AI Dashboard</title>
+
+<!-- ✅ iPhone support -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="HealthAge">
+
+<!-- ✅ FIXED ICON LINE -->
+<link rel="apple-touch-icon" href="icon.png">
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+body{background:#000;color:#fff;font-family:sans-serif;margin:0;padding:12px}
+h2{text-align:center}
+
+.card{background:#1c1c1e;padding:14px;border-radius:12px;margin-bottom:12px}
+
+label{
+  display:block;
+  margin-top:10px;
+  color:#aaa;
+  font-size:14px;
+}
+
+input,button{
+  width:100%;
+  padding:14px;
+  margin-top:6px;
+  border:none;
+  border-radius:8px;
+  background:#2c2c2e;
+  color:#fff;
+  font-size:16px;
+}
+
+button{background:#0a84ff;font-weight:bold}
+
+.metric{margin-top:6px}
+.good{color:#30d158}
+.bad{color:#ff453a}
+.mid{color:#ffd60a}
+
+.small{color:#aaa;font-size:12px}
+.reco{background:#111;padding:10px;border-radius:8px;margin-top:6px}
+
+canvas{
+  max-width:100%;
+  height:240px !important;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Health AI Dashboard</h2>
+
+<div class="card">
+
+<label>Age</label>
+<input id="age" value="52">
+
+<label>Steps</label>
+<input id="steps" value="4000">
+
+<label>Sleep Hours</label>
+<input id="sleepH" value="6">
+
+<label>Sleep Minutes</label>
+<input id="sleepM" value="30">
+
+<label>Sleep Efficiency (%)</label>
+<input id="eff" value="85">
+
+<label>HRV</label>
+<input id="hrv" value="40">
+
+<label>Resting Heart Rate</label>
+<input id="rhr" value="60">
+
+<button onclick="calc()">Analyze</button>
+
+</div>
+
+<div class="card">
+<div id="ageLine"></div>
+<div id="readinessLine"></div>
+</div>
+
+<div class="card"><div id="drivers"></div></div>
+<div class="card"><div id="recommendations"></div></div>
+
+<div class="card"><canvas id="ageChart"></canvas></div>
+<div class="card"><canvas id="readinessChart"></canvas></div>
+
+<script>
+
+let ageChart, readinessChart;
+
+function clamp(v){return Math.max(0,Math.min(1,v));}
+function status(v){return v>0.75?"good":v<0.5?"bad":"mid"}
+
+function metric(name,val){
+ let s=status(val);
+ return `<div class="metric ${s}">
+ <b>${name}</b> → ${Math.round(val*100)}%
+ </div>`;
+}
+
+function calc(){
+
+ let age = +document.getElementById("age").value;
+ let steps = +document.getElementById("steps").value;
+ let sleep = +document.getElementById("sleepH").value + (+document.getElementById("sleepM").value/60);
+ let eff = +document.getElementById("eff").value/100;
+ let hrv = +document.getElementById("hrv").value;
+ let rhr = +document.getElementById("rhr").value;
+
+ let sSteps = clamp(steps/10000);
+ let sSleep = clamp((1-Math.abs(sleep-7.5)/3)*0.6 + ((eff-0.75)/0.2)*0.4);
+ let sHRV = clamp(hrv/60);
+ let sRHR = clamp(1-(rhr-60)/30);
+ let sAge = clamp(1-(age-40)/40);
+
+ let total = sSteps*0.25 + sSleep*0.25 + sHRV*0.25 + sRHR*0.15 + sAge*0.10;
+
+ let readiness = Math.round(total*100);
+ let healthAge = Math.round(age - ((total-0.6)*20));
+
+ document.getElementById("ageLine").innerText =
+ `Health Age: ${healthAge} | Real Age: ${age}`;
+
+ document.getElementById("readinessLine").innerText =
+ `Readiness: ${readiness}%`;
+
+ document.getElementById("drivers").innerHTML =
+ "<b>Drivers</b>" +
+ metric("Steps",sSteps) +
+ metric("Sleep",sSleep) +
+ metric("HRV",sHRV) +
+ metric("RHR",sRHR);
+
+ let rec = "<b>Recommendations</b><div class='reco'>";
+
+ if(sSteps < 0.75){
+  rec += `+3000 steps<br><span class='small'>Boosts activity</span><br>`;
+ }
+
+ if(sSleep < 0.75){
+  rec += `+1h sleep<br><span class='small'>Improves recovery</span><br>`;
+ }
+
+ if(sHRV < 0.75){
+  rec += `+10 HRV<br><span class='small'>Improves nervous system</span><br>`;
+ }
+
+ if(sRHR < 0.75){
+  rec += `-5 RHR<br><span class='small'>Reduces stress</span>`;
+ }
+
+ rec += "</div>";
+
+ document.getElementById("recommendations").innerHTML = rec;
+
+ let hist = JSON.parse(localStorage.getItem("hist") || "[]");
+
+ hist.push({
+   d: new Date().toLocaleDateString(),
+   h: healthAge,
+   a: age,
+   r: readiness
+ });
+
+ if(hist.length > 7) hist.shift();
+
+ localStorage.setItem("hist", JSON.stringify(hist));
+
+ let labels = hist.map(x=>x.d);
+
+ if(ageChart) ageChart.destroy();
+
+ ageChart = new Chart(document.getElementById("ageChart"),{
+  type:"line",
+  data:{
+    labels: labels,
+    datasets:[
+      {label:"Health Age", data:hist.map(x=>x.h), borderColor:"#0a84ff"},
+      {label:"Real Age", data:hist.map(x=>x.a), borderColor:"#ff9f0a"}
+    ]
+  }
+ });
+
+ if(readinessChartlementById("readinessChart"),{
+  type:"line",
+  data:{
+    labels: labels,
+    datasets:[{
+      label:"Readiness %",
+      data:hist.map(x=>x.r),
+      borderColor:"#30d158"
+    }]
+  }
+ });
+
+}
+
+calc();
+
+</script>
+
+</body>
+</html>
