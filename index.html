@@ -2,218 +2,118 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Health AI Dashboard</title>
-
-<!-- ✅ iPhone support -->
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Health AI</title>
+<meta name="theme-color" content="#000000">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="HealthAge">
-
-<!-- ✅ FIXED ICON LINE -->
-<link rel="apple-touch-icon" href="icon.png">
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<style>
-body{background:#000;color:#fff;font-family:sans-serif;margin:0;padding:12px}
-h2{text-align:center}
-
-.card{background:#1c1c1e;padding:14px;border-radius:12px;margin-bottom:12px}
-
-label{
-  display:block;
-  margin-top:10px;
-  color:#aaa;
-  font-size:14px;
-}
-
-input,button{
-  width:100%;
-  padding:14px;
-  margin-top:6px;
-  border:none;
-  border-radius:8px;
-  background:#2c2c2e;
-  color:#fff;
-  font-size:16px;
-}
-
-button{background:#0a84ff;font-weight:bold}
-
-.metric{margin-top:6px}
-.good{color:#30d158}
-.bad{color:#ff453a}
-.mid{color:#ffd60a}
-
-.small{color:#aaa;font-size:12px}
-.reco{background:#111;padding:10px;border-radius:8px;margin-top:6px}
-
-canvas{
-  max-width:100%;
-  height:240px !important;
-}
-</style>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Health AI">
+<link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.json">
 </head>
-
 <body>
-
-<h2>Health AI Dashboard</h2>
-
+<header>
+<h1>Health AI</h1>
+<p>Your Personal Health Dashboard</p>
+</header>
+<div class="grid">
 <div class="card">
-
-<label>Age</label>
-<input id="age" value="52">
-
-<label>Steps</label>
-<input id="steps" value="4000">
-
-<label>Sleep Hours</label>
-<input id="sleepH" value="6">
-
-<label>Sleep Minutes</label>
-<input id="sleepM" value="30">
-
-<label>Sleep Efficiency (%)</label>
-<input id="eff" value="85">
-
-<label>HRV</label>
-<input id="hrv" value="40">
-
-<label>Resting Heart Rate</label>
-<input id="rhr" value="60">
-
-<button onclick="calc()">Analyze</button>
-
+<div class="label">
+Health Age
 </div>
-
+<div id="healthAge"
+class="value health">
+49
+</div>
+<div class="unit">
+years
+</div>
+</div>
 <div class="card">
-<div id="ageLine"></div>
-<div id="readinessLine"></div>
+<div class="label">
+Readiness
 </div>
-
-<div class="card"><div id="drivers"></div></div>
-<div class="card"><div id="recommendations"></div></div>
-
-<div class="card"><canvas id="ageChart"></canvas></div>
-<div class="card"><canvas id="readinessChart"></canvas></div>
-
-<script>
-
-let ageChart, readinessChart;
-
-function clamp(v){return Math.max(0,Math.min(1,v));}
-function status(v){return v>0.75?"good":v<0.5?"bad":"mid"}
-
-function metric(name,val){
- let s=status(val);
- return `<div class="metric ${s}">
- <b>${name}</b> → ${Math.round(val*100)}%
- </div>`;
-}
-
-function calc(){
-
- let age = +document.getElementById("age").value;
- let steps = +document.getElementById("steps").value;
- let sleep = +document.getElementById("sleepH").value + (+document.getElementById("sleepM").value/60);
- let eff = +document.getElementById("eff").value/100;
- let hrv = +document.getElementById("hrv").value;
- let rhr = +document.getElementById("rhr").value;
-
- let sSteps = clamp(steps/10000);
- let sSleep = clamp((1-Math.abs(sleep-7.5)/3)*0.6 + ((eff-0.75)/0.2)*0.4);
- let sHRV = clamp(hrv/60);
- let sRHR = clamp(1-(rhr-60)/30);
- let sAge = clamp(1-(age-40)/40);
-
- let total = sSteps*0.25 + sSleep*0.25 + sHRV*0.25 + sRHR*0.15 + sAge*0.10;
-
- let readiness = Math.round(total*100);
- let healthAge = Math.round(age - ((total-0.6)*20));
-
- document.getElementById("ageLine").innerText =
- `Health Age: ${healthAge} | Real Age: ${age}`;
-
- document.getElementById("readinessLine").innerText =
- `Readiness: ${readiness}%`;
-
- document.getElementById("drivers").innerHTML =
- "<b>Drivers</b>" +
- metric("Steps",sSteps) +
- metric("Sleep",sSleep) +
- metric("HRV",sHRV) +
- metric("RHR",sRHR);
-
- let rec = "<b>Recommendations</b><div class='reco'>";
-
- if(sSteps < 0.75){
-  rec += `+3000 steps<br><span class='small'>Boosts activity</span><br>`;
- }
-
- if(sSleep < 0.75){
-  rec += `+1h sleep<br><span class='small'>Improves recovery</span><br>`;
- }
-
- if(sHRV < 0.75){
-  rec += `+10 HRV<br><span class='small'>Improves nervous system</span><br>`;
- }
-
- if(sRHR < 0.75){
-  rec += `-5 RHR<br><span class='small'>Reduces stress</span>`;
- }
-
- rec += "</div>";
-
- document.getElementById("recommendations").innerHTML = rec;
-
- let hist = JSON.parse(localStorage.getItem("hist") || "[]");
-
- hist.push({
-   d: new Date().toLocaleDateString(),
-   h: healthAge,
-   a: age,
-   r: readiness
- });
-
- if(hist.length > 7) hist.shift();
-
- localStorage.setItem("hist", JSON.stringify(hist));
-
- let labels = hist.map(x=>x.d);
-
- if(ageChart) ageChart.destroy();
-
- ageChart = new Chart(document.getElementById("ageChart"),{
-  type:"line",
-  data:{
-    labels: labels,
-    datasets:[
-      {label:"Health Age", data:hist.map(x=>x.h), borderColor:"#0a84ff"},
-      {label:"Real Age", data:hist.map(x=>x.a), borderColor:"#ff9f0a"}
-    ]
-  }
- });
-
- if(readinessChartlementById("readinessChart"),{
-  type:"line",
-  data:{
-    labels: labels,
-    datasets:[{
-      label:"Readiness %",
-      data:hist.map(x=>x.r),
-      borderColor:"#30d158"
-    }]
-  }
- });
-
-}
-
-calc();
-
-</script>
-
+<div id="readiness"
+class="value readiness">
+82
+</div>
+<div class="unit">
+%
+</div>
+</div>
+<div class="card">
+<div class="label">
+Sleep Score
+</div>
+<div id="sleepScore"
+class="value sleep">
+86
+</div>
+<div class="unit">
+%
+</div>
+</div>
+<div class="card">
+<div class="label">
+Activity
+</div>
+<div id="activityScore"
+class="value activity">
+71
+</div>
+<div class="unit">
+%
+</div>
+</div>
+<div class="card large">
+<h2 class="sectionTitle">
+Health Age Trend
+</h2>
+<canvas
+id="healthChart"
+width="900"
+height="260">
+</canvas>
+</div>
+<div class="card large">
+<h2 class="sectionTitle">
+Today's AI Coach
+</h2>
+<div id="coach">
+Loading...
+</div>
+<button
+id="analyzeButton">
+Analyze Today
+</button>
+</div>
+</div>
+<div class="spacer"></div>
+<div class="bottomNav">
+<div class="active">
+🏠
+<br>
+Dashboard
+</div>
+<div>
+📈
+<br>
+History
+</div>
+<div>
+🏃
+<br>
+Workout
+</div>
+<div>
+⚙️
+<br>
+Settings
+</div>
+</div>
+<script src="charts.js"></script>
+<script src="storage.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
