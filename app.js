@@ -165,4 +165,275 @@ function readInputs(){
     APP.today.stress=
         Number($("stressInput").value);
 
+}/*
+=========================================
+HEALTH AI ENGINE
+=========================================
+*/
+
+function clamp(value,min,max){
+
+    return Math.max(min,Math.min(max,value));
+
 }
+
+function calculateScores(){
+
+    const sleepScore=
+        Math.round(
+            clamp(
+                (APP.today.sleep/8)*100,
+                0,
+                100
+            )
+        );
+
+    const activityScore=
+        Math.round(
+            clamp(
+                (APP.today.steps/10000)*100,
+                0,
+                100
+            )
+        );
+
+    const hrvScore=
+        Math.round(
+            clamp(
+                (APP.today.hrv/60)*100,
+                0,
+                100
+            )
+        );
+
+    const heartScore=
+        Math.round(
+            clamp(
+                100-
+                ((APP.today.restingHR-50)*2),
+                0,
+                100
+            )
+        );
+
+    const bodyFatScore=
+        Math.round(
+            clamp(
+                100-
+                ((APP.profile.bodyFat-15)*3),
+                0,
+                100
+            )
+        );
+
+    const stressScore=
+        Math.round(
+            clamp(
+                100-
+                APP.today.stress,
+                0,
+                100
+            )
+        );
+
+    const readiness=
+
+        Math.round(
+
+            sleepScore*0.25+
+
+            activityScore*0.20+
+
+            hrvScore*0.20+
+
+            heartScore*0.15+
+
+            stressScore*0.10+
+
+            bodyFatScore*0.10
+
+        );
+
+    const longevity=
+
+        Math.round(
+
+            readiness*0.70+
+
+            heartScore*0.15+
+
+            hrvScore*0.15
+
+        );
+
+    const healthAge=
+
+        (
+
+            APP.profile.age
+
+            -
+
+            ((longevity-50)/20)
+
+        ).toFixed(1);
+
+    return{
+
+        sleepScore,
+
+        activityScore,
+
+        readiness,
+
+        longevity,
+
+        healthAge
+
+    };
+
+}
+
+
+/*
+=========================================
+UPDATE SCREEN
+=========================================
+*/
+
+function updateDashboard(scores){
+
+    $("healthAge").textContent=scores.healthAge;
+
+    $("readiness").textContent=scores.readiness+"%";
+
+    $("sleepScore").textContent=scores.sleepScore;
+
+    $("activityScore").textContent=scores.activityScore;
+
+    $("longevityScore").textContent=scores.longevity;
+
+    $("ageDifference").textContent=
+
+        (
+
+            APP.profile.age
+
+            -
+
+            Number(scores.healthAge)
+
+        ).toFixed(1)
+
+        +" years younger";
+
+}
+
+
+/*
+=========================================
+AI COACH
+=========================================
+*/
+
+function updateCoach(scores){
+
+    let text="";
+
+    if(scores.readiness>=90){
+
+        text=
+        "🔥 Outstanding recovery.<br><br>"+
+        "<b>Workout:</b> Nova Gym Strength or T25 Gamma.";
+
+    }
+
+    else if(scores.readiness>=80){
+
+        text=
+        "💪 Good readiness.<br><br>"+
+        "<b>Workout:</b> T25 Beta or Treadmill Intervals.";
+
+    }
+
+    else if(scores.readiness>=70){
+
+        text=
+        "🙂 Moderate recovery.<br><br>"+
+        "<b>Workout:</b> Easy cardio and mobility.";
+
+    }
+
+    else{
+
+        text=
+        "😴 Recovery is low.<br><br>"+
+        "<b>Workout:</b> Walking, stretching and recovery.";
+
+    }
+
+    $("coachMessage").innerHTML=text;
+
+    $("workoutRecommendation").innerHTML=text;
+
+}
+
+
+/*
+=========================================
+ANALYZE BUTTON
+=========================================
+*/
+
+function analyzeToday(){
+
+    readInputs();
+
+    const scores=
+
+        calculateScores();
+
+    updateDashboard(scores);
+
+    updateCoach(scores);
+
+    if(typeof saveToday==="function"){
+
+        saveToday(scores);
+
+    }
+
+    if(typeof drawHealthChart==="function"){
+
+        drawHealthChart(scores.healthAge);
+
+    }
+
+    if(typeof refreshHistory==="function"){
+
+        refreshHistory();
+
+    }
+
+}
+
+$("analyzeButton").onclick=
+
+    analyzeToday;
+
+
+/*
+=========================================
+STARTUP
+=========================================
+*/
+
+window.onload=function(){
+
+    openPage("dashboardPage");
+
+    activateButton("navDashboard");
+
+    analyzeToday();
+
+};
